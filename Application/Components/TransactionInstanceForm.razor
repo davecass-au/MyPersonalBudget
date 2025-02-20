@@ -1,0 +1,50 @@
+﻿@using Application.Services.Data.Interfaces
+@using Shared.Models.DTOs
+@using Shared.Models.Enums
+
+@inject IDataServicesRepo dataService
+
+<RadzenRow AlignItems="AlignItems.Center">
+    <RadzenColumn Size="12" SizeMD="4">
+        <RadzenLabel Text="Transaction" Component="Transaction" />
+    </RadzenColumn>
+    <RadzenColumn Size="12" SizeMD="8">
+        <RadzenDropDown Context="cont"
+                        Data="@transactions"
+                        @bind-Value="@TransactionId"
+                        Name="TransactionId"
+                        TextProperty="Name"
+                        ValueProperty="Id">
+
+        </RadzenDropDown>
+
+    </RadzenColumn>
+</RadzenRow>
+
+<RadzenDropDown 
+        Context="cont" 
+        Data="@transactionInstanceTypes" 
+        @bind-Value="@SelectedInstanceType" 
+        Name="Type">
+    <Template>
+        @Enum.GetName(typeof(TransactionInstanceType), cont)
+    </Template>
+</RadzenDropDown>
+
+@if(SelectedInstanceType == TransactionInstanceType.Single)
+{
+    <TransactionSingleInstanceForm TransactionId="@TransactionId" FormClosed="@(Close)"></TransactionSingleInstanceForm>
+
+}
+else if(SelectedInstanceType == TransactionInstanceType.Recurring)
+{
+    <TransactionRecurringInstanceForm TransactionId="@TransactionId" FormClosed="@(Close)"></TransactionRecurringInstanceForm>
+}
+else
+{
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" Class="rz-mt-8 rz-mb-4">
+        <RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Large" Icon="cancel" Text="Cancel" Click="@Close" />
+    </RadzenStack>
+}
+
+

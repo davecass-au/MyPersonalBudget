@@ -1,0 +1,59 @@
+﻿@page "/accounts"
+@using Application.Services.Data.Interfaces
+@using Radzen
+@using Shared.Models.DTOs
+
+
+@inject IDataServicesRepo data
+
+
+<PageTitle>Accounts</PageTitle>
+
+<h1>Accounts</h1>
+
+@if (accounts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="10px" class="mt-2 mb-4">
+    <RadzenButton ButtonStyle="ButtonStyle.Success" Disabled="InRowEdit" Icon="add_circle_outline" Text="Add New Account" Click="@InsertRow" />
+</RadzenStack>
+
+<RadzenDataGrid @ref="accountsGrid" AllowAlternatingRows="false" AllowFiltering="true" AllowPaging="true" PageSize="5" AllowSorting="true" EditMode="@DataGridEditMode.Single"
+                Data="@accounts" TItem="AccountDto" ColumnWidth="200px">
+    <Columns>
+        <RadzenDataGridColumn Property="Name" Title="Name">
+            <EditTemplate Context="accountDto">
+                <RadzenTextBox @bind-Value="accountDto.Name" Style="width:200px; display: block" Name="Name" aria-label="Enter account name" />
+                <RadzenRequiredValidator Text="Name is required" Component="Name" Popup="true" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Property="Description" Title="Description">
+            <EditTemplate Context="accountDto">
+                <RadzenTextBox @bind-Value="accountDto.Description" Style="width:200px; display: block" Name="Description" aria-label="Enter account description" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Context="account" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="account">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => EditRow(account))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteRow(account))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </Template>
+                <EditTemplate Context="account">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(account))" aria-label="Save">
+                </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@((args) => CancelEdit(account))" aria-label="Cancel">
+                </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteRow(account))" aria-label="Delete">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+}
+
+

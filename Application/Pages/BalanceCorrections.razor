@@ -1,0 +1,67 @@
+﻿@page "/balancecorrections"
+@using Application.Services.Data.Interfaces
+@using Radzen
+@using Shared.Models.DTOs
+
+
+@inject IDataServicesRepo data
+
+
+<PageTitle>Balance Corrections</PageTitle>
+
+<h1>Balance Corrections</h1>
+
+@if (gridData == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="10px" class="mt-2 mb-4">
+        <RadzenButton ButtonStyle="ButtonStyle.Success" Disabled="InRowEdit" Icon="add_circle_outline" Text="Add New Balance Correction" Click="@InsertRow" />
+    </RadzenStack>
+
+    <RadzenDataGrid @ref="grid" AllowAlternatingRows="false" AllowFiltering="true" AllowPaging="true" PageSize="5" AllowSorting="true" EditMode="@DataGridEditMode.Single"
+                    Data="@gridData" TItem="BalanceCorrectionDto" ColumnWidth="200px">
+        <Columns>
+            <RadzenDataGridColumn Property="AccountId" Title="Account" Width="280px">
+                <Template Context="data">
+                    @GetName(data.AccountId)
+                </Template>
+                <EditTemplate Context="context">
+                    <RadzenDropDown @bind-Value="context.AccountId" Data="@accounts" TextProperty="Name" ValueProperty="Id" Style="width:100%; display: block;"
+                                    InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Select account" }})" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="CorrectionAmount" Title="Amount">
+                <EditTemplate Context="context">
+                    <RadzenNumeric @bind-Value="context.CorrectionAmount" Style="width:200px; display: block" Name="Amount" aria-label="Enter amount" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="CorrectionDate" Title="Date">
+                <EditTemplate Context="context">
+                    <RadzenDatePicker @bind-Value="context.CorrectionDate" Style="width:200px; display: block" Name="Date" aria-label="Enter date" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Context="account" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="account">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => EditRow(account))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteRow(account))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="account">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(account))" aria-label="Save">
+                    </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@((args) => CancelEdit(account))" aria-label="Cancel">
+                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@(args => DeleteRow(account))" aria-label="Delete">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+

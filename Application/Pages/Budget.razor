@@ -1,0 +1,105 @@
+﻿@page "/budget"
+@using Application.Services.Data.Interfaces
+@using Application.Services.Interfaces
+@using Application.Components
+@using Application.Models
+@using Radzen.Blazor.Rendering
+@using Shared.Models.DTOs
+
+@inject IBudgetService budgetService
+@inject IJSRuntime JSRuntime
+
+@inject IDataServicesRepo dataService
+
+<PageTitle>Budget</PageTitle>
+
+<h1>Budget</h1>
+
+
+
+
+@if (IsLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <RadzenButton @ref=createAccountButton Text="Add Account" Click="@(args => accountPopup.ToggleAsync(createAccountButton.Element))" />
+    <RadzenButton @ref=createTransactionButton Text="Add Transaction" Click="@(args => transactionPopup.ToggleAsync(createTransactionButton.Element))" />
+    <RadzenButton @ref=createInstanceButton Text="Schedule Transaction" Click="@(args => transactionInstancePopup.ToggleAsync(createInstanceButton.Element))" />
+
+    <Popup @ref=accountPopup 
+            Lazy=true 
+            Open="@OnOpen"
+            Style="display:none;position:absolute;height:300px;width:600px;padding:5px;border:var(--rz-panel-border);background-color:var(--rz-panel-background-color);">
+        <AccountForm FormClosed="@(AccountFormClosed)"/>
+    </Popup>
+
+    <Popup @ref=transactionPopup 
+        Lazy=true 
+        Open="@OnOpen"
+        Style="display:none;position:absolute;height:300px;width:600px;padding:5px;border:var(--rz-panel-border);background-color:var(--rz-panel-background-color);">
+        <TransactionForm FormClosed="@(TransactionFormClosed)"/>
+    </Popup>
+
+    <Popup @ref=transactionInstancePopup
+           Lazy=true
+           Open="@OnOpen"
+           Style="display:none;position:absolute;height:300px;width:600px;padding:5px;border:var(--rz-panel-border);background-color:var(--rz-panel-background-color);">
+        <TransactionInstanceForm FormClosed="@(TransactionInstanceFormClosed)" />
+    </Popup>
+
+    <RadzenDataGrid 
+            @ref="@grid"
+            Data="@GridData"
+            TItem="BudgetGridRowEntry"
+            AllowAlternatingRows="true" 
+            AllowFiltering="false" 
+            AllowSorting="false"
+            AllowGrouping="true"
+            HideGroupedColumn="true"
+            Render="@OnRender"
+            ColumnWidth="200px">
+        <GroupHeaderTemplate>
+            @(context.Data.Key ?? "")
+        </GroupHeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn 
+                Property="AccountName"
+                Title="Account">   
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn 
+                Property="TransactionType"
+                Title="TransactionType"
+                >
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn 
+                Property="BudgetEntry.TransactionName"
+                Title="Transaction"
+                Groupable="false">
+            </RadzenDataGridColumn>
+
+            @foreach (var curDate in DatesToDisplay)
+            {
+                <RadzenDataGridColumn 
+                        Title=@curDate.ToShortDateString() 
+                        Groupable="false">
+                    <Template Context="context">
+                        @DataGridHelpers.GetCurrencyDisplayString(GetValueByDate(context, curDate), false)
+                    </Template>
+                    <GroupFooterTemplate>
+                        <b>@DataGridHelpers.GetCurrencyDisplayString(GetTotalByDate(context.Data.Items.Cast<BudgetGridRowEntry>().ToList(), curDate), false)</b>
+                    </GroupFooterTemplate>
+                    <FooterTemplate>
+                        <b>@DataGridHelpers.GetCurrencyDisplayString(GetRunningBalanceByDate(curDate), false)</b>
+                        
+                    </FooterTemplate>
+                </RadzenDataGridColumn>
+            }
+        </Columns>
+    </RadzenDataGrid>
+}
+
+
